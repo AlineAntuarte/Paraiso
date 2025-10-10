@@ -1,148 +1,193 @@
-# 1. Configuração (primeira vez)
-```bash
-git config --global user.name "AlineAntuarte" //Use seu usuário
-git config --global user.email "aline.ba@aluno.ifsc.edu.br" // Use seu email
-```
+> ### **[  LEIA A DOCUMENTAÇÃO DO PROJETO !!!  ]**
 
-## 1.1 Configuração para não repetir senha
-```bash
-git config --global credential.helper cache
-git config --global credential.helper 'cache --timeout=3600'
-```
-> Neste exemplo, as credenciais seriam armazenadas por 1 hora (3600 segundos).
+>
+> [!NOTE]
+> **Como Visualizar Este Arquivo Corretamente**
+>
+> Este é um arquivo escrito em **Markdown** (`.md`), uma linguagem de formatação de texto. Para a melhor experiência de leitura, com títulos, links e imagens formatados, é recomendado abri-lo no modo de **Pré-Visualização** (Preview).
+>
+> ### No Visual Studio Code:
+>
+> * **Usando Atalhos de Teclado (Recomendado):**
+>     * **Pré-Visualização Lado a Lado:** Pressione `Ctrl + K` e, em seguida, `V`. (ou `Cmd + K` e `V` no macOS).
+>     * **Pré-Visualização em Nova Aba:** Pressione `Ctrl + Shift + V`. (ou `Cmd + Shift + V` no macOS).
+>
+> * **Usando a Paleta de Comandos:**
+>     1.  Pressione `Ctrl + Shift + P` para abrir a Paleta de Comandos.
+>     2.  Digite `Markdown`.
+>     3.  Selecione a opção **"Markdown: Abrir Pré-Visualização ao Lado"** (*Markdown: Open Preview to the Side*).
 
-
-# 2. Criar ou clonar repositório
-```bash
-git init                   # inicia um repositório local
-git clone <url-do-repo>    # clona um repositório existente
-```
-
-
-# 3. Trabalhar no código
-```bash
-git status                 # ver alterações feitas
-git diff                   # ver detalhes das alterações
-```
-
-
-# 4. Preparar (stage) e confirmar (commit)
-```bash
-git add <arquivo>          # adiciona arquivo específico
-git add .                  # adiciona todos os arquivos modificados
-git commit -m "mensagem clara"   # registra alterações com mensagem
-```
-
-
-# 5. Sincronizar com o remoto
-```bash
-git pull origin main       # busca e mescla alterações do remoto
-git push -u origin main    # envia alterações e define seguimento
-git push origin main       # nos usos seguintes é só `git push`
-```
-
-
-# 6. Trabalhar com branches
-```bash
-git branch                         # mostra branches locais
-git checkout -b nome-branch        # cria e muda para nova branch
-git checkout nome-branch           # muda para uma branch existente
-git merge nome-branch              # mescla outra branch na branch atual
-git branch -d nome-branch          # apaga a branch local quando encerrada
-git push origin --delete nome-branch  # apaga a branch no GitHub
-```
-
-
-# 7. Desfazer ou guardar mudanças
-```bash
-git reset HEAD <arquivo>           # tira do stage
-git checkout -- <arquivo>          # descarta alterações não comitadas
-git reset --hard                   # retorna tudo ao último commit
-git revert <hash>                  # desfaz um commit criando um novo
-git stash                          # guarda alterações temporariamente
-git stash pop                      # recupera alterações guardadas
-```
-
-Claro, aqui está a seção completa, formatada em Markdown para ser copiada e colada diretamente em um arquivo `.md`.
-
+---
 -----
 
 ````md
-# 8. Fluxo de Trabalho com Pull Request (PR) e Merge
+# Guia Prático de Git e GitHub para Projetos
 
-Este é um fluxo completo para trabalhar em uma funcionalidade específica (como `Movimentos`, `Radar` ou `Ataque`) em uma branch separada e depois integrá-la à branch principal (`main`) de forma segura.
+Este guia está organizado para seguir o fluxo de trabalho real de um projeto, desde a configuração inicial até o ciclo diário de desenvolvimento.
+A lógica é: **1. Preparar o ambiente** -\> **2. Iniciar o projeto** -\> **3. O ciclo diário de trabalho** -\> **4. Comandos úteis/avançados para consulta**.
 
-### Passo 8.1: Iniciar o trabalho em uma nova branch
+---
 
-Sempre comece a partir da branch `main` atualizada.
+## Parte 1: Configuração Inicial (Você só faz isso uma vez)
+
+Antes de tudo, configure seu nome de usuário e e-mail. Isso identificará seus commits.
 
 ```bash
-# 1. Mude para a branch principal
-git checkout main
+# Use seu usuário do GitHub
+git config --global user.name "AlineAntuarte"
 
-# 2. Garanta que ela está atualizada com o repositório remoto
-git pull origin main
-
-# 3. Crie sua nova branch e já mude para ela.
-# (Use 'Movimentos', 'Radar' ou 'Ataque' como nome-da-feature)
-git checkout -b Movimentos
+# Use o mesmo e-mail da sua conta do GitHub
+git config --global user.email "aline.ba@aluno.ifsc.edu.br"
 ````
 
-### Passo 8.2: Desenvolver e fazer o commit
-
-Agora você está na branch `Movimentos`. Trabalhe no seu código normalmente, adicionando e comitando as alterações.
+Opcional, mas muito útil, é configurar o Git para salvar sua senha por um tempo.
 
 ```bash
-# Adicione os arquivos modificados
-git add .
-
-# Crie um commit com uma mensagem clara sobre o que foi feito
-git commit -m "Implementa lógica de movimentação do robô"
+# Salva suas credenciais em cache por 1 hora (3600 segundos)
+git config --global credential.helper 'cache --timeout=3600'
 ```
 
-### Passo 8.3: Enviar sua branch para o GitHub
+-----
 
-Envie sua nova branch para o repositório remoto (`origin`).
+## Parte 2: Começando um Projeto
+
+Você vai começar um projeto de duas formas: clonando um que já existe (mais comum) ou iniciando um do zero.
 
 ```bash
-# A opção '-u' faz com que sua branch local "siga" a remota.
-# Na primeira vez que enviar, use esta opção.
-git push -u origin Movimentos
+# Cenário A: Baixar um projeto que já existe no GitHub
+git clone <url-do-repositorio>
+
+# Cenário B: Iniciar um repositório em uma pasta local que ainda não tem Git
+git init
 ```
 
-### Passo 8.4: Abrir o Pull Request (PR) no GitHub
+-----
 
-1.  Vá para a página do seu repositório no GitHub.
-2.  O GitHub mostrará um aviso amarelo com um botão **"Compare & pull request"** para a branch que você acabou de enviar. Clique nele.
-3.  Se o aviso não aparecer, vá na aba **"Pull requests"** e clique em **"New pull request"**.
-4.  Selecione a `base: main` (onde você quer juntar o código) e `compare: Movimentos` (de onde vem o código).
-5.  Dê um título claro para o seu PR (ex: "Adiciona Movimentação") e uma descrição, se necessário.
-6.  Clique em **"Create pull request"**.
+## Parte 3: O Ciclo de Trabalho Principal (Seu Dia a Dia)
 
-### Passo 8.5: Fazer o Merge do Pull Request
+Este é o fluxo que você repetirá toda vez que for desenvolver uma nova funcionalidade ou corrigir um problema.
 
-Depois que o PR for criado (e opcionalmente revisado), você pode mesclar as alterações na branch `main`.
+### Passo 1: Sincronize seu Repositório
 
-1.  Na página do Pull Request, você verá um botão verde **"Merge pull request"**.
-2.  Clique nele e, em seguida, em **"Confirm merge"**.
-3.  **Opcional, mas recomendado:** Após o merge, o GitHub oferecerá um botão **"Delete branch"** para apagar a branch `Movimentos` do reposit-ório remoto. É uma boa prática fazer isso para manter o repositório limpo.
-
-### Passo 8.6: Limpeza e Sincronização Local
-
-Após o merge, sua branch local `Movimentos` não é mais necessária. Volte para a `main`, atualize-a e apague a branch local.
+Sempre comece garantindo que seu ambiente local está atualizado com a versão mais recente do projeto no GitHub.
 
 ```bash
-# 1. Volte para a branch principal
+# Garante que seu Git local conheça todas as branches do remoto
+git fetch origin
+
+# Vá para a branch principal
 git checkout main
 
-# 2. Atualize sua 'main' local com o código que acabou de ser mergeado no GitHub
+# Atualize sua 'main' local com a versão do GitHub
+git pull origin main
+```
+
+### Passo 2: Crie ou Mude para sua Branch de Trabalho
+
+Nunca trabalhe diretamente na branch `main`. Crie uma branch separada para sua tarefa.
+
+```bash
+# Cenário A: Criando uma branch NOVA para uma nova funcionalidade
+git checkout -b Movimentos
+
+# Cenário B: Voltando a trabalhar em uma branch que JÁ EXISTE
+git checkout Movimentos
+```
+
+### Passo 3: Trabalhe no Código
+
+Agora você está na sua branch. Programe, altere e crie arquivos. A qualquer momento, use estes comandos para ver o que está acontecendo:
+
+```bash
+# Veja quais arquivos foram modificados, criados ou deletados
+git status
+
+# Veja em detalhes o que foi alterado dentro dos arquivos
+git diff
+```
+
+### Passo 4: Salve seu Progresso (Stage e Commit)
+
+Quando atingir um ponto estável no seu trabalho, salve as alterações em um "pacote" chamado commit.
+
+```bash
+# Adicione todos os arquivos modificados à "área de preparação" (stage)
+git add .
+
+# Registre as alterações com uma mensagem clara e descritiva
+git commit -m "Implementa movimentação inicial do robô"
+```
+
+### Passo 5: Envie suas Alterações para o GitHub
+
+Envie seus commits para a branch remota no GitHub, para que outros possam ver seu trabalho e para ter um backup seguro.
+
+```bash
+# Envia os commits da sua branch local para a branch de mesmo nome no GitHub
+git push
+```
+
+> **Dica:** Se for a primeira vez que você envia essa branch, o Git pode pedir para você usar um comando mais completo: `git push --set-upstream origin Movimentos`. Apenas copie, cole e execute.
+
+### Passo 6: Crie um Pull Request (PR) e Faça o Merge
+
+Quando sua funcionalidade estiver pronta, é hora de integrá-la à branch `main` através de um Pull Request. **Isso é feito no site do GitHub.**
+
+1.  **Abra o PR:** Na página do seu repositório no GitHub, um aviso amarelo **"Compare & pull request"** aparecerá. Clique nele.
+2.  **Descreva:** Dê um bom título e descrição para suas alterações.
+3.  **Merge:** Após a revisão (se houver), clique no botão verde **"Merge pull request"** para integrar seu código.
+4.  **Limpeza:** Após o merge, o GitHub dará a opção **"Delete branch"**. É uma boa prática apagar a branch que não será mais usada.
+
+### Passo 7: Sincronize e Limpe Localmente
+
+Após o merge, sua branch de trabalho já cumpriu seu papel. Volte para a `main` e apague a branch localmente.
+
+```bash
+# Volte para a branch principal
+git checkout main
+
+# Atualize sua 'main' com o código que você acabou de mergear
 git pull origin main
 
-# 3. Apague a branch local que não será mais usada
+# Apague a branch local que não é mais necessária
 git branch -d Movimentos
 ```
 
-> **Pronto!** O processo é o mesmo para as branches `Radar` e `Ataque`. Basta repetir os passos substituindo o nome da branch.
+E o ciclo recomeça no Passo 1 para a próxima tarefa\!
 
+-----
+
+## Parte 4: Comandos Úteis (Para Consulta)
+
+Comandos importantes que você pode precisar em situações específicas.
+
+### Gerenciando Branches
+
+```bash
+# Lista todas as branches locais
+git branch
+
+# Apaga uma branch no GitHub
+git push origin --delete nome-da-branch
+```
+
+### Desfazendo Alterações
+
+```bash
+# Tira um arquivo da "área de preparação" (stage)
+git reset HEAD <arquivo>
+
+# Descarta completamente as alterações em um arquivo (CUIDADO!)
+git checkout -- <arquivo>
+
+# Desfaz um commit específico criando um novo commit reverso (SEGURO)
+git revert <hash-do-commit>
+
+# Guarda alterações temporariamente para trabalhar em outra coisa
+git stash
+
+# Aplica as alterações guardadas e remove da lista
+git stash pop
+```
 ```
 ```
