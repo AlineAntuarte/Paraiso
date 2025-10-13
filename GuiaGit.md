@@ -54,6 +54,9 @@ git config --global credential.helper 'cache --timeout=3600'
 Você vai começar um projeto de duas formas: clonando um que já existe (mais comum) ou iniciando um do zero.
 
 ```bash
+# Conecte-se com seu repositório remoto
+git remote https://github.com/AlineAntuarte/Paraiso.git
+
 # Cenário A: Baixar um projeto que já existe no GitHub
 git clone <url-do-repositorio>
 
