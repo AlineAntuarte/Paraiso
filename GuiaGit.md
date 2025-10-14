@@ -1,24 +1,25 @@
-> ### **[  LEIA A DOCUMENTAÇÃO DO PROJETO !!!  ]**
 
+# Guia Prático de Git e GitHub para Projetos
+
+> ## **[  LEIA A DOCUMENTAÇÃO DO PROJETO !!!  ]**
 >
 > [!NOTE]
 > **Como Visualizar Este Arquivo Corretamente**
 >
 > Este é um arquivo escrito em **Markdown** (`.md`), uma linguagem de formatação de texto. Para a melhor experiência de leitura, com títulos, links e imagens formatados, é recomendado abri-lo no modo de **Pré-Visualização** (Preview).
 >
-> ### No Visual Studio Code:
+> ### No Visual Studio Code
 >
 > * **Usando Atalhos de Teclado (Recomendado):**
->     * **Pré-Visualização Lado a Lado:** Pressione `Ctrl + K` e, em seguida, `V`. (ou `Cmd + K` e `V` no macOS).
->     * **Pré-Visualização em Nova Aba:** Pressione `Ctrl + Shift + V`. (ou `Cmd + Shift + V` no macOS).
+>   * **Pré-Visualização Lado a Lado:** Pressione `Ctrl + K` e, em seguida, `V`. (ou `Cmd + K` e `V` no macOS).
+>   * **Pré-Visualização em Nova Aba:** Pressione `Ctrl + Shift + V`. (ou `Cmd + Shift + V` no macOS).
 >
 > * **Usando a Paleta de Comandos:**
->     1.  Pressione `Ctrl + Shift + P` para abrir a Paleta de Comandos.
->     2.  Digite `Markdown`.
->     3.  Selecione a opção **"Markdown: Abrir Pré-Visualização ao Lado"** (*Markdown: Open Preview to the Side*).
+>     1. Pressione `Ctrl + Shift + P` para abrir a Paleta de Comandos.
+>     2. Digite `Markdown`.
+>     3. Selecione a opção **"Markdown: Abrir Pré-Visualização ao Lado"** (*Markdown: Open Preview to the Side*).
 
 ---
------
 
 ````md
 # Guia Prático de Git e GitHub para Projetos
@@ -47,7 +48,7 @@ Opcional, mas muito útil, é configurar o Git para salvar sua senha por um temp
 git config --global credential.helper 'cache --timeout=3600'
 ```
 
------
+---
 
 ## Parte 2: Começando um Projeto
 
@@ -61,7 +62,7 @@ git clone <url-do-repositorio>
 git init
 ```
 
------
+---
 
 ## Parte 3: O Ciclo de Trabalho Principal (Seu Dia a Dia)
 
@@ -133,10 +134,10 @@ git push
 
 Quando sua funcionalidade estiver pronta, é hora de integrá-la à branch `main` através de um Pull Request. **Isso é feito no site do GitHub.**
 
-1.  **Abra o PR:** Na página do seu repositório no GitHub, um aviso amarelo **"Compare & pull request"** aparecerá. Clique nele.
-2.  **Descreva:** Dê um bom título e descrição para suas alterações.
-3.  **Merge:** Após a revisão (se houver), clique no botão verde **"Merge pull request"** para integrar seu código.
-4.  **Limpeza:** Após o merge, o GitHub dará a opção **"Delete branch"**. É uma boa prática apagar a branch que não será mais usada.
+1. **Abra o PR:** Na página do seu repositório no GitHub, um aviso amarelo **"Compare & pull request"** aparecerá. Clique nele.
+2. **Descreva:** Dê um bom título e descrição para suas alterações.
+3. **Merge:** Após a revisão (se houver), clique no botão verde **"Merge pull request"** para integrar seu código.
+4. **Limpeza:** Após o merge, o GitHub dará a opção **"Delete branch"**. É uma boa prática apagar a branch que não será mais usada.
 
 ### Passo 7: Sincronize e Limpe Localmente
 
@@ -155,7 +156,7 @@ git branch -d Movimentos
 
 E o ciclo recomeça no Passo 1 para a próxima tarefa\!
 
------
+---
 
 ## Parte 4: Comandos Úteis (Para Consulta)
 
@@ -188,6 +189,4 @@ git stash
 
 # Aplica as alterações guardadas e remove da lista
 git stash pop
-```
-```
 ```
