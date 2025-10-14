@@ -1,56 +1,55 @@
 package Paraiso;
+
 import robocode.*;
-//import java.awt.Color;
+//importar java.awt.Color;
 
-// API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
+//LittleBoy - autores (Aline, Thalia e Thaissa)
 
-/**
- * LittleBoy - a robot by (Aline, Thalia e Thaissa)
- */
-public class LittleBoy extends Robot
-{
+public class LittleBoy extends Robot {
 	/**
-	 * run: LittleBoy's default behavior
+	 * run: Comportamento padrão do LittleBoy, tanto mover tanque quanto arma.
 	 */
 	public void run() {
-		// Initialization of the robot should be put here
+		// A inicialização do robô deve ser colocada aqui
 
-		// After trying out your robot, try uncommenting the import at the top,
-		// and the next line:
+		// Depois de testar seu robô, tente descomentar a importação no topo e a próxima
+		// linha:
 
 		// setColors(Color.red,Color.blue,Color.green); // body,gun,radar
 
-		// Robot main loop
-		while(true) {
-			// Replace the next 4 lines with any behavior you would like
-			ahead(100);
-			turnGunRight(360);
-			back(100);
-			turnGunRight(360);
+		// Loop principal do robô
+		while (true) {
+			/*
+			 * Substitua as próximas 4 linhas por qualquer comportamento que você queira.
+			 */
+			ahead(100); // Em frente
+			turnGunRight(360); // Virar arma à direita
+			back(100); // Recuar
+			turnGunRight(360); // Virar arma à direita
 		}
 	}
 
-	/**
-	 * onScannedRobot: What to do when you see another robot
-	 */
+
+	 // onScannedRobot:  O que fazer ao ver outro robô
+
 	public void onScannedRobot(ScannedRobotEvent e) {
-		// Replace the next line with any behavior you would like
+		// Substitua a próxima linha por qualquer comportamento desejado
 		fire(1);
 	}
 
 	/**
-	 * onHitByBullet: What to do when you're hit by a bullet
+	 * onHitByBullet: O que fazer ao ser atingido por uma bala
 	 */
 	public void onHitByBullet(HitByBulletEvent e) {
-		// Replace the next line with any behavior you would like
+		// Substitua a próxima linha por qualquer comportamento desejado
 		back(10);
 	}
-	
+
 	/**
-	 * onHitWall: What to do when you hit a wall
+	 * onHitWall: O que fazer ao bater em uma parede
 	 */
 	public void onHitWall(HitWallEvent e) {
-		// Replace the next line with any behavior you would like
+		// Substitua a próxima linha por qualquer comportamento desejado
 		back(20);
-	}	
+	}
 }
