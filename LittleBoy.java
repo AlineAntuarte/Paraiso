@@ -1,7 +1,7 @@
 package Paraiso;
 
 import robocode.*;
-//importar java.awt.Color;
+//import java.awt.Color;
 
 //LittleBoy - autores (Aline, Thalia e Thaissa)
 
