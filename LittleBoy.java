@@ -22,15 +22,14 @@ public class LittleBoy extends Robot {
 			/*
 			 * Substitua as próximas 4 linhas por qualquer comportamento que você queira.
 			 */
-			ahead(100); // Em frente
-			turnGunRight(360); // Virar arma à direita
-			back(100); // Recuar
-			turnGunRight(360); // Virar arma à direita
+			ahead(100); // Anda 100 pixels para frente
+			turnGunRight(360); // Gira a arma em 360°
+			back(100); // Anda 100 pixels para trás
+			turnGunRight(360); // Gira a arma novamente em 360°
 		}
 	}
 
-
-	 // onScannedRobot:  O que fazer ao ver outro robô
+	// onScannedRobot: O que fazer ao ver outro robô
 
 	public void onScannedRobot(ScannedRobotEvent e) {
 		// Substitua a próxima linha por qualquer comportamento desejado
