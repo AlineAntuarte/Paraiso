@@ -1,7 +1,7 @@
 package Paraiso;
 
 import robocode.*;
-//importar java.awt.Color;
+import java.awt.Color;
 
 //LittleBoy - autores (Aline, Thalia e Thaissa)
 
@@ -12,10 +12,10 @@ public class LittleBoy extends Robot {
 	public void run() {
 		// A inicialização do robô deve ser colocada aqui
 
-		// Depois de testar seu robô, tente descomentar a importação no topo e a próxima
-		// linha:
+		// Depois de testar seu robô, tente descomentar a importação no topo e a próxima linha:
 
-		// setColors(Color.red,Color.blue,Color.green); // body,gun,radar
+		setBodyColor(Color.black); // Define e a cor do corpo como vermelho
+		setRadarColor(Color.red); // Define e a cor do radar como verde
 
 		// Loop principal do robô
 		while (true) {
