@@ -41,6 +41,7 @@ public class LittleBoy extends AdvancedRobot {
 	// onScannedRobot: O que fazer ao ver outro robô
 
 	public void onScannedRobot(ScannedRobotEvent e) {
+		shoot (e);
 		setFire (1);
 		// Quando Radar encontra um inimigo
 		double angleToEnemy =
@@ -49,7 +50,15 @@ public class LittleBoy extends AdvancedRobot {
 		double extraTurn = Math.atan(36.0 / e.getDistance()) * (turnToEnemy >= 0 ? 1 : -1);
 		
 		setTurnRadarRightRadians(turnToEnemy + extraTurn);
-		
+			
+	}
+	
+	// Configuração da Mira
+	public void shoot (ScannedRobotEvent e) {
+		double absoluteBearing = e.getBearingRadians() + getHeadingRadians();
+		double gunTurn = absoluteBearing - getGunHeadingRadians();
+		setTurnGunRightRadians(Utils.normalRelativeAngle(gunTurn));
+		setFire(1.0);
 	}
 
 	/**
@@ -59,6 +68,7 @@ public class LittleBoy extends AdvancedRobot {
 		// Substitua a próxima linha por qualquer comportamento desejado
 		back(10);
 	}
+	
 
 	/**
 	 * onHitWall: O que fazer ao bater em uma parede
