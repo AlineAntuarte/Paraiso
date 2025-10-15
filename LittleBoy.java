@@ -2,16 +2,22 @@ package Paraiso;
 
 import robocode.*;
 import java.awt.Color;
+import robocode.util.Utils;
 
 //LittleBoy - autores (Aline, Thalia e Thaissa)
 
-public class LittleBoy extends Robot {
+public class LittleBoy extends AdvancedRobot {
 	/**
 	 * run: Comportamento padrão do LittleBoy, tanto mover tanque quanto arma.
 	 */
 	public void run() {
 		// A inicialização do robô deve ser colocada aqui
-
+		// Inicialização do Radar
+		setAdjustRadarForGunTurn(true);
+		setAdjustRadarForRobotTurn(true);
+		// Inicialização da Arma
+		setTurnGunRight (Double.POSITIVE_INFINITY);
+		int counter = 0;
 		// Depois de testar seu robô, tente descomentar a importação no topo e a próxima linha:
 
 		setBodyColor(Color.black); // Define e a cor do corpo como vermelho
@@ -19,21 +25,31 @@ public class LittleBoy extends Robot {
 
 		// Loop principal do robô
 		while (true) {
-			/*
-			 * Substitua as próximas 4 linhas por qualquer comportamento que você queira.
-			 */
-			ahead(100); // Anda 100 pixels para frente
-			turnGunRight(360); // Gira a arma em 360°
-			back(100); // Anda 100 pixels para trás
-			turnGunRight(360); // Gira a arma novamente em 360°
+			// Settings Radar
+			if (getRadarTurnRemaining() == 0.0)
+				setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+			// Settings Movimentação
+			if (counter <16)
+				setAhead(100);
+			else
+				setBack(100);
+			counter = (counter + 1) % 32;
+			execute ();
 		}
 	}
 
 	// onScannedRobot: O que fazer ao ver outro robô
 
 	public void onScannedRobot(ScannedRobotEvent e) {
-		// Substitua a próxima linha por qualquer comportamento desejado
-		fire(1);
+		setFire (1);
+		// Quando Radar encontra um inimigo
+		double angleToEnemy =
+			getHeadingRadians() + e.getBearingRadians();
+		double turnToEnemy = Utils.normalRelativeAngle(angleToEnemy - getRadarHeadingRadians());
+		double extraTurn = Math.atan(36.0 / e.getDistance()) * (turnToEnemy >= 0 ? 1 : -1);
+		
+		setTurnRadarRightRadians(turnToEnemy + extraTurn);
+		
 	}
 
 	/**
