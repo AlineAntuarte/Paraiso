@@ -11,29 +11,24 @@ public class LittleBoy extends AdvancedRobot {
 	 * run: Comportamento padrão do LittleBoy, tanto mover tanque quanto arma.
 	 */
 	public void run() {
-		// A inicialização do robô deve ser colocada aqui
+		// Cor do robô
+		setBodyColor(Color.black); // Define e a cor do corpo como preto
+		setRadarColor(Color.blue); // Define e a cor do radar como azul
+
 		// Inicialização do Radar
 		setAdjustRadarForGunTurn(true);
 		setAdjustRadarForRobotTurn(true);
+
 		// Inicialização da Arma
 		setTurnGunRight(Double.POSITIVE_INFINITY);
-		int counter = 0;
-
-		setBodyColor(Color.black); // Define e a cor do corpo como vermelho
-		setRadarColor(Color.red); // Define e a cor do radar como verde
+		setTurnRadarRight(Double.POSITIVE_INFINITY);
+		// Arma e o radar girando constantemente para procurar por alvos.
+		// A movimentação é controlada pelo onScannedRobot.
 
 		// Loop principal do robô
 		while (true) {
-			// Settings Radar
-			if (getRadarTurnRemaining() == 0.0)
-				setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
-			// Settings Movimentação
-			if (counter < 16)
-				setAhead(100);
-			else
-				setBack(100);
-			counter = (counter + 1) % 32;
 			execute();
+			// Ele executa todos os comandos 'set' que foram dados desde a última chamada.
 		}
 	}
 
@@ -41,11 +36,13 @@ public class LittleBoy extends AdvancedRobot {
 
 	public void onScannedRobot(ScannedRobotEvent e) { // --- LÓGICA DE MIRA E TIRO ---
 		shoot(e);
-		// Chama seu método personalizado para mirar a arma e decidir a potência do tiro.
+		// Chama seu método personalizado para mirar a arma e decidir a potência do
+		// tiro.
 		// Passamos 'e' para que o método tenha os dados do inimigo.
 
-		setFire(1);
-		// Quando Radar encontra um inimigo
+		// O setFire() que estava aqui era redundante, pois o método shoot() já faz
+		// isso.
+
 		double angleToEnemy = getHeadingRadians() + e.getBearingRadians();
 		// Calcula o ângulo absoluto do inimigo no mapa.
 		// (minha direção + a direção relativa do inimigo = direção absoluta do inimigo)
@@ -62,6 +59,12 @@ public class LittleBoy extends AdvancedRobot {
 		setTurnRadarRightRadians(turnToEnemy + extraTurn);
 		// Define o comando para virar o radar para a nova posição calculada.
 
+		double turnAngle = e.getBearingRadians() + (Math.PI / 2);
+		setTurnRightRadians(Utils.normalRelativeAngle(turnAngle));
+		// O objetivo é se mover de lado em relação ao inimigo, a mira está perfeita mas
+		// o preço é ficar na mira do inimigo. Assim travamos a mira mas fugimos.
+		// Para isso, viramos o corpo do nosso robô 90 graus (PI/2 radianos)
+		// em relação ao inimigo e andamos para frente.
 	}
 
 	// Configuração da Mira
