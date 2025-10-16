@@ -21,7 +21,7 @@ public class LittleBoy extends AdvancedRobot {
 		// Depois de testar seu robô, tente descomentar a importação no topo e a próxima linha:
 
 		setBodyColor(Color.black); // Define e a cor do corpo como vermelho
-		setRadarColor(Color.red); // Define e a cor do radar como verde
+		setRadarColor(Color.blue); // Define e a cor do radar como azul
 
 		// Loop principal do robô
 		while (true) {
