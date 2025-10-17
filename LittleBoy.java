@@ -109,11 +109,130 @@ public class LittleBoy extends AdvancedRobot {
 		return Math.min(e.getEnergy() / 4, firePower);
 	}
 
-	/**
-	 * onHitByBullet: O que fazer ao ser atingido por uma bala
-	 */
+	// onHitByBullet com lógica de aprendizado, lembra onde foi atingido e "ensina"
+	// o robô para evitar esses pontos no futuro.
+
 	public void onHitByBullet(HitByBulletEvent e) {
-		back(10);
+		
+		// Se não houver ondas para analisar, não há o que fazer.
+		if (!enemyWaves.isEmpty()) {
+			// enemyWave = ArrayList que guarda os rastros de tiros inimigos, atingindos ou
+			// que ainda atingiram.
+			// .inEmpty() = true e a lista está vazia, false e há ao menos um elemento na
+			// lista. Sendo uma lista de rastros de tiros.
+			// ! = inverte, se a lista não estiver vazia, entra no if.
+
+			Point2D.Double hitBulletLocation = new Point2D.Double(e.getBullet().getX(), e.getBullet().getY());
+			EnemyWave hitWave = null;
+
+			// Essa linha de código cria um ponto que marca a localização onde a bala
+			// inimiga nos atingiu.
+
+			// Point2D.Double = classe que armazena uma coordenada (x,y) de ponto flutuante.
+			// hitBulletLocation = nome da variável que guarda a localização do tiro que nos
+			// atingiu.
+			// new Point2D.Double(...) = cria um novo ponto com as coordenadas x e y da bala
+			// inimiga.
+			// e = evento que contém informações sobre o tiro que nos atingiu.
+			// .getBullet() = método que retorna o objeto Bullet (bala) do evento que nos
+			// atingiu.
+			// .getX() e .getY() = métodos que retornam as coordenadas x e y da bala no
+			// momento do impacto.
+
+			for (EnemyWave ew : enemyWaves) { // EnemyWave ew = Isso diz "Para cada volta no laço, pegue um item da
+												// lista enemyWaves e chame-o temporariamente de ew".
+				/*
+				 * Analogia: Imagine que você tem uma lista de suspeitos (enemyWaves). Este laço
+				 * pega o primeiro suspeito da lista, chama-o de ew, permite que você o
+				 * investigue, e então passa para o próximo suspeito até a lista acabar.
+				 */
+				if (Math.abs(ew.distanceTraveled - hitBulletLocation.distance(ew.fireLocation)) < 50) {
+					hitWave = ew; // Se a distância percorrida pela onda (ew.distanceTraveled) for
+									// aproximadamente igual à diferença entre o local onde a onda foi
+									// disparada (ew.fireLocation) e o local onde a bala nos atingiu
+									// (hitBulletLocation), então encontramos a onda que nos atingiu.
+					break;
+				}
+			}
+
+			if (hitWave != null) {
+				/*
+				 * Esta linha é uma verificação de segurança final.
+				 * O que faz? Ela pergunta:
+				 * "O nosso trabalho de detetive no laço for anterior realmente encontrou a onda que nos acertou?"
+				 * hitWave: É a variável que deveria guardar a onda culpada.
+				 * != null: Significa "não é nulo" ou "não está vazio".
+				 * Tendo algo (não vazio/nulo) em hitWave significa que encontramos a onda
+				 * culpada por nos acertar.
+				 * Se hitWave fosse null, isso indicaria que não conseguimos identificar qual
+				 * onda nos atingiu.
+				 * Portanto, este if garante que só prosseguiremos com o aprendizado se tivermos
+				 * certeza.
+				 */
+				int index = (int) (getFactorIndex(hitWave, hitWave.direction) * (surfStats.size() - 1));
+				/*
+				 * Esta linha calcula em qual parte do seu
+				 * mapa de rastros de tiro você estava quando foi atingido.
+				 * 
+				 * getFactorIndex(...): Calcula o "Guess Factor".
+				 * Pense no Guess Factor como uma nota de -1 a 1 que descreve sua posição em
+				 * relação à onda da bala.
+				 * 
+				 * Um fator de 0 significa que você estava bem no meio do caminho, na mira
+				 * perfeita.
+				 * 
+				 * Um fator de 1 significa que você se esquivou o máximo que podia para um lado.
+				 * 
+				 * Um fator de -1 significa que você se esquivou o máximo que podia para o outro
+				 * lado.
+				 */
+
+				/*
+				 * * (surfStats.size() - 1): Esta parte converte a "nota" (de -1 a 1) para um
+				 * índice que corresponde a uma posição no seu array surfStats. Se seu surfStats
+				 * tem 47 posições (índices de 0 a 46), este cálculo mapeia o Guess Factor para
+				 * um número entre 0 e 46.
+				 * 
+				 * (int): Converte o resultado final (que pode ser um número decimal) em um
+				 * número inteiro, para que possa ser usado como um índice de array.
+				 */
+
+				for (int i = 0; i < surfStats.size(); i++) {
+					surfStats.set(i, surfStats.get(i) + (int) Math.max(0, 1.0 / (Math.abs(index - i) + 1) - 0.1));
+				}
+				/*
+				 * for (int i = 0; i < surfStats.size(); i++): Este laço passa por todas as
+				 * posições do seu mapa de perigo (surfStats), uma de cada vez.
+				 * 
+				 * surfStats.set(i, ...): Para cada posição i, este comando vai atualizar o
+				 * valor de perigo dela.
+				 * 
+				 * surfStats.get(i) + ...: A lógica é:
+				 * "pegue o valor de perigo antigo e some um novo valor a ele".
+				 * 
+				 * 1.0 / (Math.abs(index - i) + 1): Esta é a fórmula matemática que cria uma
+				 * "zona de perigo".
+				 * 
+				 * Math.abs(index - i) calcula a distância entre a posição i (que estamos
+				 * olhando agora) e o index (onde fomos atingidos).
+				 * 
+				 * Quando i é igual a index, a distância é 0. A fórmula se torna 1.0 / (0 + 1) =
+				 * 1.0. Este é o maior valor de perigo adicionado.
+				 * 
+				 * Quando i está a uma posição de distância, a fórmula se torna 1.0 / (1 + 1) =
+				 * 0.5. Um valor de perigo menor.
+				 * 
+				 * Quanto mais longe i estiver do index, menor será o valor adicionado. Isso
+				 * cria uma "colina" de perigo, com o pico no local exato do erro.
+				 * 
+				 * - 0.1 e Math.max(0, ...): São ajustes finos para garantir que o perigo
+				 * adicionado diminua mais rapidamente e nunca seja um número negativo.
+				 */
+
+				enemyWaves.remove(hitWave); // # enemyWaves.remove(hitWave) = Remove a onda que te acertou da sua lista
+											// de ameaças ativas (enemyWaves).
+			}
+		}
 	}
 
 	/**
@@ -166,8 +285,9 @@ public class LittleBoy extends AdvancedRobot {
 
 	public double getFactorIndex(EnemyWave surfWave, int direction) {
 		Point2D.Double enemyFireLocation = surfWave.fireLocation;
-		double offsetAngle = Utils.normalRelativeAngle(Math.atan2(getX() - enemyFireLocation.x, getY() - enemyFireLocation.y)
-				- surfWave.directAngle);
+		double offsetAngle = Utils
+				.normalRelativeAngle(Math.atan2(getX() - enemyFireLocation.x, getY() - enemyFireLocation.y)
+						- surfWave.directAngle);
 		double factor = offsetAngle / maxEscapeAngle(surfWave.bulletVelocity) * direction;
 		return limit(-1, factor, 1);
 	}
