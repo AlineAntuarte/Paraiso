@@ -173,10 +173,30 @@ public class LittleBoy extends AdvancedRobot {
 	}
 
 	/**
-	 * onHitWall: O que fazer ao bater em uma parede
+	 * onHitWall: O que fazer ao bater em uma parede.
+	 * Esta é uma manobra de pânico para "desgrudar" da parede.
 	 */
 	public void onHitWall(HitWallEvent e) {
-		back(20);
+		// Pega o ângulo da parede que batemos (em radianos)
+		double wallAngle = e.getBearingRadians();
+
+		// Calcula um novo ângulo para virar, que seja 90 graus
+		// PERPENDICULAR à parede. Isso aponta nosso robô
+		// diretamente para longe dela.
+		double turnTo = Utils.normalRelativeAngle(wallAngle + Math.PI / 2);
+
+		// Gira o robô para esse novo ângulo
+		setTurnRightRadians(turnTo);
+
+		// E dá ré AGRESSIVAMENTE para sair de perto da parede.
+		// 150 iniciais não eram, mas 500 pixels deve ser o suficiente para o
+		// doAntiGravity()
+		// recalcular uma rota segura no próximo turno.
+		setBack(500);
+		// Depois de testes, talvez 500 seja muito. Podemos ajustar isso mais tarde.
+		// Para quem ler isso, tente focar na lógica de onHitWall funcionar em sincronia
+		// com Anti Gravidade. A briga deles pela linha de comando da tremeliques no
+		// robô.
 	}
 
 	// --- [CORREÇÃO EVASÃO] ---
