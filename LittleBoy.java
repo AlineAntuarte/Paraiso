@@ -65,11 +65,6 @@ public class LittleBoy extends AdvancedRobot {
     public void onScannedRobot(ScannedRobotEvent e) {
         shoot(e);
 
-        // --- [DEFEITO 2 - NÃO CORRIGIDO (Como solicitado)] ---
-        // Esta linha sobrescreve a força do tiro calculada no método shoot().
-        // Seu robô sempre atira com força 1.
-        setFire(1);
-
         // Quando Radar encontra um inimigo
         double angleToEnemy = getHeadingRadians() + e.getBearingRadians();
         double turnToEnemy = Utils.normalRelativeAngle(angleToEnemy - getRadarHeadingRadians());
@@ -100,7 +95,6 @@ public class LittleBoy extends AdvancedRobot {
         setTurnGunRightRadians(Utils.normalRelativeAngle(gunTurn));
         // Força do Tiro
         double firePower = decideFirePower(e);
-        // Este comando é sobrescrito pelo setFire(1) no onScannedRobot
         setFire(firePower);
     }
 
