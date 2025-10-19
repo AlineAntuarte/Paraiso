@@ -9,9 +9,6 @@ import robocode.util.Utils;
 //LittleBoy - autores (Aline, Thalia e Thaissa)
 
 public class LittleBoy extends AdvancedRobot {
-	/**
-	 * run: Comportamento padrão do LittleBoy, tanto mover tanque quanto arma.
-	 */
 
 	// ------------------------------
 	// VARIÁVEIS PARA WAVE SURFING
@@ -19,8 +16,12 @@ public class LittleBoy extends AdvancedRobot {
 	static double surfDirection = 1;
 	static double enemyEnergy = 100;
 	ArrayList<EnemyWave> enemyWaves = new ArrayList<>();
-	ArrayList<Integer> surfStats = new ArrayList<>(Collections.nCopies(47, 0)); // Mapa de perigo (47 GuessFactors)
+	ArrayList<Double> surfStats = new ArrayList<Double>(Collections.nCopies(47, 0.0)); // Mapa de perigo (47
+																						// GuessFactors)
 
+	/**
+	 * run: Comportamento padrão do LittleBoy, tanto mover tanque quanto arma.
+	 */
 	public void run() {
 		// A inicialização do robô deve ser colocada aqui
 		// Inicialização do Radar
@@ -48,7 +49,7 @@ public class LittleBoy extends AdvancedRobot {
 			// Atualiza as ondas inimigas e realiza o movimento evasivo
 			updateWaves();
 			doSurfing();
-
+			decayDangerMap();
 			execute();
 		}
 	}
@@ -153,8 +154,8 @@ public class LittleBoy extends AdvancedRobot {
 				// Em seguida, convertemos essa "nota" para um índice no nosso array
 				// 'surfStats'.
 				// Este 'index' é o local exato do "crime" no nosso mapa de perigo.
-				
-				//CORREÇÃO DE BUG ANTERIOR
+
+				// CORREÇÃO DE BUG ANTERIOR
 				// Primeiro, pegamos o Fator de Adivinhação
 				double guessFactor = getFactorIndex(hitWave, hitWave.direction);
 
@@ -168,7 +169,7 @@ public class LittleBoy extends AdvancedRobot {
 					// A fórmula abaixo cria uma "colina" de perigo: o aumento é máximo no 'index'
 					// exato do impacto
 					// e diminui gradualmente para as posições vizinhas.
-					int perigoAdicional = (int) Math.round (Math.max(0, 1.0 / (Math.abs(index - i) + 1) - 0.1));
+					double perigoAdicional = Math.max(0, 1.0 / (Math.abs(index - i) + 1) - 0.1);
 					surfStats.set(i, surfStats.get(i) + perigoAdicional);
 				}
 
@@ -177,6 +178,23 @@ public class LittleBoy extends AdvancedRobot {
 				// Removemos ela da lista para manter nosso rastreamento eficiente e limpo.
 				enemyWaves.remove(hitWave);
 			}
+		}
+	}
+
+	/**
+	 * Este método é chamado a cada turno para "esquecer" levemente
+	 * os perigos antigos. Isso mantém o mapa focado nas ameaças recentes. Sem ele o
+	 * roboô só acumularia perigo e ficaria "paranoico". Podemos considerar este
+	 * processo como uma terapia contra a ansiedade.
+	 */
+	public void decayDangerMap() {
+
+		// Este loop passa por todos os 47 slots do nosso mapa de perigo
+		for (int i = 0; i < surfStats.size(); i++) {
+
+			// Nós multiplicamos o valor de perigo atual por um "fator de decaimento".
+			// 0.999 é um bom valor inicial: ele "esquece" 0.1% do perigo a cada turno.
+			surfStats.set(i, surfStats.get(i) * 0.999);
 		}
 	}
 
