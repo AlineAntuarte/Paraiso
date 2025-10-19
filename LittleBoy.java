@@ -110,64 +110,75 @@ public class LittleBoy extends AdvancedRobot {
 	}
 
 	/**
- * onHitByBullet: Este método é chamado sempre que nosso robô é atingido por uma bala.
- * É aqui que implementamos a lógica de "aprendizado" do Wave Surfing.
- */
-public void onHitByBullet(HitByBulletEvent e) {
-    // 1. VERIFICAÇÃO INICIAL
-    // Primeiro, verificamos se a lista de ondas inimigas não está vazia.
-    // Se não estivermos rastreando nenhuma onda, não há como aprender nada.
-    if (!enemyWaves.isEmpty()) {
+	 * onHitByBullet: Este método é chamado sempre que nosso robô é atingido por uma
+	 * bala.
+	 * É aqui que implementamos a lógica de "aprendizado" do Wave Surfing.
+	 */
+	public void onHitByBullet(HitByBulletEvent e) {
+		// 1. VERIFICAÇÃO INICIAL
+		// Primeiro, verificamos se a lista de ondas inimigas não está vazia.
+		// Se não estivermos rastreando nenhuma onda, não há como aprender nada.
+		if (!enemyWaves.isEmpty()) {
 
-        // 2. PREPARAÇÃO DA ANÁLISE
-        // Cria um ponto (x, y) para marcar o local exato onde a bala nos atingiu.
-        Point2D.Double hitBulletLocation = new Point2D.Double(e.getBullet().getX(), e.getBullet().getY());
-        
-        // Prepara uma variável para guardar a onda específica que nos acertou.
-        // Começamos com 'null' (vazio) porque ainda não a encontramos.
-        EnemyWave hitWave = null;
+			// 2. PREPARAÇÃO DA ANÁLISE
+			// Cria um ponto (x, y) para marcar o local exato onde a bala nos atingiu.
+			Point2D.Double hitBulletLocation = new Point2D.Double(e.getBullet().getX(), e.getBullet().getY());
 
-        // 3. O TRABALHO DE DETETIVE: ENCONTRAR A ONDA CULPADA
-        // Fazemos um loop para analisar cada onda inimiga que estamos rastreando.
-        for (EnemyWave ew : enemyWaves) {
-            // A lógica principal: comparamos a distância que a onda JÁ PERCORREU (baseado no tempo)
-            // com a distância REAL entre o local do tiro e o local do impacto.
-            // Se a diferença entre essas duas distâncias for muito pequena (aqui, < 50 pixels),
-            // significa que esta é a onda que nos acertou.
-            if (Math.abs(ew.distanceTraveled - hitBulletLocation.distance(ew.fireLocation)) < 50) {
-                // Encontrando esta, a guardamos na nossa variável 'hitWave' <-- ew.
-                hitWave = ew;
-                // Interrompemos o loop, pois não precisamos mais procurar.
-                break;
-            }
-        }
+			// Prepara uma variável para guardar a onda específica que nos acertou.
+			// Começamos com 'null' (vazio) porque ainda não a encontramos.
+			EnemyWave hitWave = null;
 
-        // 4. O APRENDIZADO: ATUALIZAR O MAPA DE PERIGO
-        // Após a busca, verificamos se realmente encontramos uma onda correspondente.
-        if (hitWave != null) {
-            // Calculamos o "Guess Factor", que é uma "nota" que representa nossa posição
-            // em relação à onda no momento do impacto.
-            // Em seguida, convertemos essa "nota" para um índice no nosso array 'surfStats'.
-            // Este 'index' é o local exato do "crime" no nosso mapa de perigo.
-            int index = (int) (getFactorIndex(hitWave, hitWave.direction) * (surfStats.size() - 1));
+			// 3. O TRABALHO DE DETETIVE: ENCONTRAR A ONDA CULPADA
+			// Fazemos um loop para analisar cada onda inimiga que estamos rastreando.
+			for (EnemyWave ew : enemyWaves) {
+				// A lógica principal: comparamos a distância que a onda JÁ PERCORREU (baseado
+				// no tempo)
+				// com a distância REAL entre o local do tiro e o local do impacto.
+				// Se a diferença entre essas duas distâncias for muito pequena (aqui, < 50
+				// pixels),
+				// significa que esta é a onda que nos acertou.
+				if (Math.abs(ew.distanceTraveled - hitBulletLocation.distance(ew.fireLocation)) < 50) {
+					// Encontrando esta, a guardamos na nossa variável 'hitWave' <-- ew.
+					hitWave = ew;
+					// Interrompemos o loop, pois não precisamos mais procurar.
+					break;
+				}
+			}
 
-            // Agora, vamos "ensinar" o robô, marcando aquele local como perigoso.
-            // Percorremos todo o mapa de perigo ('surfStats')...
-            for (int i = 0; i < surfStats.size(); i++) {
-                // ...e aumentamos o nível de perigo em cada posição.
-                // A fórmula abaixo cria uma "colina" de perigo: o aumento é máximo no 'index' exato do impacto
-                // e diminui gradualmente para as posições vizinhas.
-                int perigoAdicional = (int)Math.max(0, 1.0 / (Math.abs(index - i) + 1) - 0.1);
-                surfStats.set(i, surfStats.get(i) + perigoAdicional);
-            }
-            
-            // 5. LIMPEZA FINAL
-            // A onda já nos atingiu, então ela não é mais uma ameaça.
-            // Removemos ela da lista para manter nosso rastreamento eficiente e limpo.
-            enemyWaves.remove(hitWave);
-        }
-    }
-}
+			// 4. O APRENDIZADO: ATUALIZAR O MAPA DE PERIGO
+			// Após a busca, verificamos se realmente encontramos uma onda correspondente.
+			if (hitWave != null) {
+				// Calculamos o "Guess Factor", que é uma "nota" que representa nossa posição
+				// em relação à onda no momento do impacto.
+				// Em seguida, convertemos essa "nota" para um índice no nosso array
+				// 'surfStats'.
+				// Este 'index' é o local exato do "crime" no nosso mapa de perigo.
+				
+				//CORREÇÃO DE BUG ANTERIOR
+				// Primeiro, pegamos o Fator de Adivinhação
+				double guessFactor = getFactorIndex(hitWave, hitWave.direction);
+
+				// Agora, aplicamos a fórmula
+				int index = (int) Math.round(((guessFactor + 1.0) / 2.0) * (surfStats.size() - 1));
+
+				// Agora, vamos "ensinar" o robô, marcando aquele local como perigoso.
+				// Percorremos todo o mapa de perigo ('surfStats')...
+				for (int i = 0; i < surfStats.size(); i++) {
+					// ...e aumentamos o nível de perigo em cada posição.
+					// A fórmula abaixo cria uma "colina" de perigo: o aumento é máximo no 'index'
+					// exato do impacto
+					// e diminui gradualmente para as posições vizinhas.
+					int perigoAdicional = (int) Math.round (Math.max(0, 1.0 / (Math.abs(index - i) + 1) - 0.1));
+					surfStats.set(i, surfStats.get(i) + perigoAdicional);
+				}
+
+				// 5. LIMPEZA FINAL
+				// A onda já nos atingiu, então ela não é mais uma ameaça.
+				// Removemos ela da lista para manter nosso rastreamento eficiente e limpo.
+				enemyWaves.remove(hitWave);
+			}
+		}
+	}
 
 	/**
 	 * onHitWall: O que fazer ao bater em uma parede
@@ -219,8 +230,9 @@ public void onHitByBullet(HitByBulletEvent e) {
 
 	public double getFactorIndex(EnemyWave surfWave, int direction) {
 		Point2D.Double enemyFireLocation = surfWave.fireLocation;
-		double offsetAngle = Utils.normalRelativeAngle(Math.atan2(getX() - enemyFireLocation.x, getY() - enemyFireLocation.y)
-				- surfWave.directAngle);
+		double offsetAngle = Utils
+				.normalRelativeAngle(Math.atan2(getX() - enemyFireLocation.x, getY() - enemyFireLocation.y)
+						- surfWave.directAngle);
 		double factor = offsetAngle / maxEscapeAngle(surfWave.bulletVelocity) * direction;
 		return limit(-1, factor, 1);
 	}
