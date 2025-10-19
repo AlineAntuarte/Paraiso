@@ -47,13 +47,13 @@ aluno: robots$ git clone https://github.com/AlineAntuarte/Paraiso.git
 aluno: robots$ git clone https://github.com/AlineAntuarte/Paraiso.git
 ```
 
-- TODO push e pull deve ser com a linha de comando dentro da pasta PARAISO. Agora já temos o repositório clonado graças ao passo 4, devemos trabalhar DENTRO DELE.
-Exemplo:
-```
  - TODO push e pull deve ser com a linha de comando dentro da pasta PARAISO. Agora já temos o repositório clonado graças ao passo 4, devemos trabalhar DENTRO DELE.
 Exemplo:
 
-```
+```json
 aluno: Paraiso$ git push/pull origin main
 aluno: Paraiso$ git push/pull (em casos de branch)
 ```
+
+ - Caso tentemos fazer push/pull estando na pasta robots, o git não reconhecerá o repositório remoto, pois ele está DENTRO da pasta Paraiso.
+ - Caso tenhamos feito alterações no robô estando na pasta robots, devemos mover os arquivos para a pasta Paraiso antes de fazer commit/push.
