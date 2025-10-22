@@ -5,269 +5,231 @@ import java.awt.Color;
 import java.awt.geom.*;
 import java.util.*;
 import robocode.util.Utils;
+import java.io.File;
 
-//LittleBoy - autores (Aline, Thalia e Thaissa)
-
+/**
+ * LittleBoy Ultra-Potente - Autores: Aline, Thalia e Thaissa
+ *
+ * Funcionalidades:
+ * - Wave Surfing avançado
+ * - Mira preditiva dinâmica
+ * - Anti-Gravity Movement agressivo
+ * - Radar inteligente
+ * - Aprendizado de padrões inimigos (DangerMap)
+ */
 public class LittleBoy extends AdvancedRobot {
-	// ------------------------------
-	// VARIÁVEIS PARA WAVE SURFING
-	// ------------------------------
-	static double surfDirection = 1;
-	static double enemyEnergy = 100;
-	ArrayList<EnemyWave> enemyWaves = new ArrayList<>();
 
-	// --- [CORREÇÃO EVASÃO] ---
-	// A memória de longo prazo (mapa de perigo) agora usa Double
-	// para armazenar nuances de perigo (ex: 0.9, 0.4).
-	ArrayList<Double> surfStats = new ArrayList<Double>(Collections.nCopies(47, 0.0));
+    // ------------------------------
+    // VARIÁVEIS DE SURFING
+    // ------------------------------
+    static double surfDirection = 1;          // Direção lateral do Wave Surfing (-1 ou 1)
+    static double enemyEnergy = 100;          // Guarda energia do inimigo para detectar tiros
+    ArrayList<EnemyWave> enemyWaves = new ArrayList<>();  // Lista de ondas de balas inimigas
+    ArrayList<MyWave> myWaves = new ArrayList<>();        // Lista de ondas das nossas balas
 
-	// --- [Método Anti Gravidade] ---
-	Point2D.Double lastEnemyLocation;
+    // ------------------------------
+    // RASTREAMENTO DO INIMIGO
+    // ------------------------------
+    String currentTarget = null;              // Nome do inimigo que estamos atacando
+    double enemyHeading = 0;                  // Direção do inimigo
+    double enemyVelocity = 0;                 // Velocidade do inimigo
+    double enemyDistance = 0;                 // Distância até o inimigo
+    double enemyAbsoluteBearing = 0;          // Ângulo absoluto para o inimigo
+    Point2D.Double lastEnemyLocation;         // Última posição conhecida do inimigo
 
-	// ------------------------------
-	// run: Comportamento padrão do LittleBoy.
-	// ------------------------------
-	public void run() {
-		setAdjustRadarForGunTurn(true);
-		setAdjustRadarForRobotTurn(true);
-		setTurnGunRight(Double.POSITIVE_INFINITY);
+    // ------------------------------
+    // CONTROLLERS
+    // ------------------------------
+    private DangerMapManager dangerMapManager; // Gerencia DangerMaps
+    private GunController gunController;       // Controla mira e disparos
+    private MovementController movementController; // Controla movimento anti-gravidade
+    private RadarController radarController;   // Controla radar
 
-		setBodyColor(Color.black);
-		setRadarColor(Color.blue);
+    // ------------------------------
+    // MÉTODO PRINCIPAL run()
+    // ------------------------------
+    public void run() {
+        setAdjustRadarForGunTurn(true);  // Radar independente do canhão
+        setAdjustRadarForRobotTurn(true); // Radar independente do corpo
+        setTurnGunRight(Double.POSITIVE_INFINITY); // Gira o canhão infinitamente
 
-		while (true) {
-			// Radar: varredura contínua
-			if (getRadarTurnRemaining() == 0.0)
-				setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+        // Inicializa controllers
+        dangerMapManager = new DangerMapManager(3, 101, 0.995, Math.max(getBattleFieldWidth(), getBattleFieldHeight()));
+        gunController = new GunController(this, dangerMapManager);
+        movementController = new MovementController(this);
+        radarController = new RadarController(this);
 
-			// Atualiza ondas (curto prazo)
-			updateWaves();
+        // Tenta carregar DangerMap de batalhas anteriores
+        try { dangerMapManager.loadAll(getDataFile("dangermap")); } catch(Exception ex){}
 
-			// Se há ondas ativas, prioriza Wave Surfing; senão, faz AntiGravity
-			if (!enemyWaves.isEmpty()) {
-				doSurfing();
-			} else {
-				doAntiGravity();
-			}
+        // Configura cores do robô
+        setBodyColor(Color.black);
+        setRadarColor(Color.blue);
+        setGunColor(Color.red);
 
-			// Decaimento do mapa de perigo (esquecer lentamente eventos antigos)
-			decayDangerMap();
+        // Loop principal
+        while(true){
+            // Gira radar continuamente
+            if(getRadarTurnRemaining() == 0.0)
+                setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
 
-			execute();
-		}
-	}
+            // Atualiza ondas inimigas (para Wave Surfing)
+            updateWaves();
 
-	// onScannedRobot: O que fazer ao ver outro robô
-	public void onScannedRobot(ScannedRobotEvent e) {
-		shoot(e);
+            // Movimento: Wave Surfing se houver ondas, senão Anti-Gravity
+            if(!enemyWaves.isEmpty())
+                doSurfingDynamic();
+            else
+                movementController.antiGravityMove(lastEnemyLocation);
 
-		double angleToEnemy = getHeadingRadians() + e.getBearingRadians();
-		double enemyX = getX() + Math.sin(angleToEnemy) * e.getDistance();
-		double enemyY = getY() + Math.cos(angleToEnemy) * e.getDistance();
-		lastEnemyLocation = new Point2D.Double(enemyX, enemyY);
+            // Decaimento do DangerMap
+            decayDangerMap();
 
-		double turnToEnemy = Utils.normalRelativeAngle(angleToEnemy - getRadarHeadingRadians());
-		double extraTurn = Math.atan(36.0 / e.getDistance()) * (turnToEnemy >= 0 ? 1 : -1);
-		setTurnRadarRightRadians(turnToEnemy + extraTurn);
+            execute(); // Executa todos os comandos pendentes
+        }
+    }
 
-		// DETECÇÃO DE TIRO INIMIGO
-		double changeInEnergy = enemyEnergy - e.getEnergy();
-		if (changeInEnergy > 0 && changeInEnergy <= 3.0) {
-			EnemyWave ew = new EnemyWave();
-			ew.fireTime = getTime();
-			ew.bulletVelocity = bulletVelocity(changeInEnergy);
-			ew.fireLocation = new Point2D.Double(getX() + Math.sin(angleToEnemy) * e.getDistance(),
-					getY() + Math.cos(angleToEnemy) * e.getDistance());
-			ew.directAngle = angleToEnemy;
-			ew.direction = (Math.sin(e.getBearingRadians()) * getVelocity()) >= 0 ? 1 : -1;
-			enemyWaves.add(ew);
-		}
-		enemyEnergy = e.getEnergy();
-	}
+    // ------------------------------
+    // Evento: escaneou outro robô
+    // ------------------------------
+    public void onScannedRobot(ScannedRobotEvent e){
+        // Atualiza dados do inimigo
+        enemyHeading = e.getHeadingRadians();
+        enemyVelocity = e.getVelocity();
+        enemyDistance = e.getDistance();
+        enemyAbsoluteBearing = getHeadingRadians() + e.getBearingRadians();
+        currentTarget = e.getName();
 
-	// Configuração da Mira
-	public void shoot(ScannedRobotEvent e) {
-		double absoluteBearing = e.getBearingRadians() + getHeadingRadians();
-		double gunTurn = absoluteBearing - getGunHeadingRadians();
-		setTurnGunRightRadians(Utils.normalRelativeAngle(gunTurn));
-		double firePower = decideFirePower(e);
-		setFire(firePower);
-	}
+        // Trava radar no inimigo
+        radarController.lockRadar(enemyAbsoluteBearing);
 
-	public double decideFirePower(ScannedRobotEvent e) {
-		double firePower = getOthers() == 1 ? 2.0 : 3.0;
+        // Disparo preditivo (GuessFactor + DangerMap)
+        MyWave mw = gunController.fireWithGuess(e);
+        if(mw != null) myWaves.add(mw);
 
-		if (e.getDistance() > 400) {
-			firePower = 1.0;
-		} else if (e.getDistance() < 200) {
-			firePower = 3.0;
-		}
+        // Calcula posição inimiga para Anti-Gravity
+        double enemyX = getX() + Math.sin(enemyAbsoluteBearing) * e.getDistance();
+        double enemyY = getY() + Math.cos(enemyAbsoluteBearing) * e.getDistance();
+        lastEnemyLocation = new Point2D.Double(enemyX, enemyY);
 
-		if (getEnergy() < 1) {
-			firePower = 0.1;
-		} else if (getEnergy() < 10) {
-			firePower = 1.0;
-		}
+        // Detecta disparo inimigo (queda de energia)
+        double change = enemyEnergy - e.getEnergy();
+        if(change > 0 && change <= 3.0){
+            EnemyWave ew = new EnemyWave();
+            ew.fireTime = getTime();
+            ew.bulletVelocity = 20 - 3*change; // Calcula velocidade da bala
+            ew.fireLocation = new Point2D.Double(enemyX, enemyY);
+            ew.directAngle = enemyAbsoluteBearing;
+            ew.direction = (Math.sin(e.getBearingRadians())*getVelocity()>=0?1:-1);
+            enemyWaves.add(ew); // Adiciona onda inimiga
+        }
+        enemyEnergy = e.getEnergy();
+    }
 
-		return Math.min(e.getEnergy() / 4, firePower);
-	}
+    // ------------------------------
+    // Atualiza ondas inimigas
+    // ------------------------------
+    public void updateWaves(){
+        for(int i=0;i<enemyWaves.size();i++){
+            EnemyWave ew = enemyWaves.get(i);
+            ew.distanceTraveled = (getTime() - ew.fireTime) * ew.bulletVelocity;
+            // Remove ondas que já passaram do robô
+            if(ew.distanceTraveled > Point2D.distance(getX(), getY(), ew.fireLocation.x, ew.fireLocation.y) + 50){
+                enemyWaves.remove(i); i--;
+            }
+        }
+    }
 
-	/**
-	 * onHitByBullet: Lógica de "aprendizado" do Wave Surfing.
-	 */
-	public void onHitByBullet(HitByBulletEvent e) {
-		if (!enemyWaves.isEmpty()) {
-			Point2D.Double hitBulletLocation = new Point2D.Double(e.getBullet().getX(), e.getBullet().getY());
-			EnemyWave hitWave = null;
+    // ------------------------------
+    // Wave Surfing Dinâmico
+    // ------------------------------
+    public void doSurfingDynamic(){
+        if(enemyWaves.isEmpty()) return;
 
-			for (EnemyWave ew : enemyWaves) {
-				if (Math.abs(ew.distanceTraveled - hitBulletLocation.distance(ew.fireLocation)) < 50) {
-					hitWave = ew;
-					break;
-				}
-			}
+        // Escolhe a onda mais perigosa
+        EnemyWave best = null;
+        double bestDelta = Double.MAX_VALUE;
+        for(EnemyWave ew:enemyWaves){
+            double dist = Point2D.distance(getX(), getY(), ew.fireLocation.x, ew.fireLocation.y);
+            double delta = Math.abs(ew.distanceTraveled - dist);
+            if(delta<bestDelta){ bestDelta = delta; best = ew; }
+        }
+        if(best==null) return;
 
-			if (hitWave != null) {
-				double guessFactor = getFactorIndex(hitWave, hitWave.direction);
-				int index = (int) Math.round(((guessFactor + 1.0) / 2.0) * (surfStats.size() - 1));
+        // Calcula perigo à esquerda e à direita
+        double dangerLeft = checkDanger(best,-1);
+        double dangerRight = checkDanger(best,1);
 
-				for (int i = 0; i < surfStats.size(); i++) {
-					double perigoAdicional = Math.max(0, 1.0 / (Math.abs(index - i) + 1) - 0.1);
-					surfStats.set(i, surfStats.get(i) + perigoAdicional);
-				}
-				enemyWaves.remove(hitWave);
-			}
-		}
-	}
+        // Define direção do surf
+        surfDirection = (dangerLeft<dangerRight)?-1:1;
 
-	/**
-	 * onHitWall: manobra de pânico (versão original).
-	 */
-	public void onHitWall(HitWallEvent e) {
-		double wallAngle = e.getBearingRadians();
-		double turnTo = Utils.normalRelativeAngle(wallAngle + Math.PI / 2);
-		setTurnRightRadians(turnTo);
-		// Ré agressivo para se distanciar da parede (original)
-		setBack(500);
-	}
+        // Pequena aleatoriedade para confundir inimigo
+        if(Math.random()<0.05) surfDirection*=-1;
 
-	public void decayDangerMap() {
-		for (int i = 0; i < surfStats.size(); i++) {
-			surfStats.set(i, surfStats.get(i) * 0.999);
-		}
-	}
+        // Calcula ângulo de movimento e vai para frente ou ré
+        double goAngle = Utils.normalRelativeAngle(best.directAngle + surfDirection*Math.PI/2);
+        MovementController.setBackAsFront(this, goAngle);
+    }
 
-	public void doAntiGravity() {
-		double xForce = 0;
-		double yForce = 0;
+    // ------------------------------
+    // Checa perigo baseado no DangerMap
+    // ------------------------------
+    private double checkDanger(EnemyWave wave,int direction){
+        double myX=getX(), myY=getY(), danger=0;
+        double distanceToFire = Point2D.distance(myX,myY,wave.fireLocation.x,wave.fireLocation.y);
+        double timeToImpact = Math.max(0,(distanceToFire-wave.distanceTraveled)/wave.bulletVelocity);
+        DangerMap map = dangerMapManager!=null?dangerMapManager.getMapForDistance(distanceToFire):null;
 
-		double power = 1000;
+        for(int step=0; step<Math.min(80,(int)Math.ceil(timeToImpact+1)); step++){
+            double moveAngle = wave.directAngle+(direction*Math.PI/2);
+            myX += Math.sin(moveAngle)*Math.abs(getVelocity());
+            myY += Math.cos(moveAngle)*Math.abs(getVelocity());
+            myX = Math.max(18,Math.min(getBattleFieldWidth()-18,myX));
+            myY = Math.max(18,Math.min(getBattleFieldHeight()-18,myY));
 
-		// Paredes
-		yForce += power / Math.max(1, getY() * getY());
-		yForce -= power / Math.max(1, Math.pow(getBattleFieldHeight() - getY(), 2));
-		xForce += power / Math.max(1, getX() * getX());
-		xForce -= power / Math.max(1, Math.pow(getBattleFieldWidth() - getX(), 2));
+            double offsetAngle = Utils.normalRelativeAngle(Math.atan2(myX-wave.fireLocation.x,myY-wave.fireLocation.y)-wave.directAngle);
+            double guessFactor = offsetAngle/Math.asin(8.0/wave.bulletVelocity)*direction;
+            guessFactor = Math.max(-1,Math.min(1,guessFactor));
+            if(map!=null) danger += map.get(map.indexFromGuessFactor(guessFactor));
+        }
 
-		// Inimigo
-		if (lastEnemyLocation != null) {
-			double dx = getX() - lastEnemyLocation.x;
-			double dy = getY() - lastEnemyLocation.y;
-			double distanceSq = (dx * dx) + (dy * dy);
-			xForce += (dx / Math.max(1, distanceSq)) * power;
-			yForce += (dy / Math.max(1, distanceSq)) * power;
-		}
+        return danger + Math.random()*0.02; // Aleatoriedade pequena
+    }
 
-		double goAngle = Math.atan2(xForce, yForce);
-		double turnAngle = Utils.normalRelativeAngle(goAngle - getHeadingRadians());
+    // ------------------------------
+    // Decaimento do DangerMap
+    // ------------------------------
+    public void decayDangerMap(){ if(dangerMapManager!=null) dangerMapManager.decayAll(); }
 
-		if (Math.abs(turnAngle) > (Math.PI / 2)) {
-			setTurnRightRadians(Utils.normalRelativeAngle(turnAngle + Math.PI));
-			setBack(100);
-		} else {
-			setTurnRightRadians(turnAngle);
-			setAhead(100);
-		}
-	}
+    // ------------------------------
+    // Eventos
+    // ------------------------------
+    public void onHitByBullet(HitByBulletEvent e){ movementController.antiGravityMove(lastEnemyLocation); }
+    public void onHitWall(HitWallEvent e){ movementController.antiGravityMove(lastEnemyLocation); }
+    public void onBulletHit(BulletHitEvent e){ gunController.onBulletHit(e,myWaves,dangerMapManager); }
+    public void onBulletMissed(BulletMissedEvent e){ gunController.onBulletMissed(e,myWaves,dangerMapManager); }
+    public void onWin(WinEvent e){ saveDangerMap(); setBodyColor(Color.green); setRadarColor(Color.white); }
+    public void onDeath(DeathEvent e){ saveDangerMap(); }
 
-	// ------------------------------
-	// MÉTODOS DE WAVE SURFING
-	// ------------------------------
+    // ------------------------------
+    // Salva mapas de perigo
+    // ------------------------------
+    private void saveDangerMap(){ try{ dangerMapManager.saveAll(getDataFile("dangermap")); }catch(Exception ex){} }
 
-	public static double bulletVelocity(double power) {
-		return 20 - 3 * power;
-	}
-
-	public void updateWaves() {
-		for (int i = 0; i < enemyWaves.size(); i++) {
-			EnemyWave ew = enemyWaves.get(i);
-			ew.distanceTraveled = (getTime() - ew.fireTime) * ew.bulletVelocity;
-			if (ew.distanceTraveled > Point2D.distance(getX(), getY(), ew.fireLocation.x, ew.fireLocation.y) + 50) {
-				enemyWaves.remove(i);
-				i--;
-			}
-		}
-	}
-
-	public void doSurfing() {
-		if (enemyWaves.isEmpty())
-			return;
-
-		EnemyWave surfWave = enemyWaves.get(0);
-		double dangerLeft = checkDanger(surfWave, -1);
-		double dangerRight = checkDanger(surfWave, 1);
-
-		if (dangerLeft < dangerRight)
-			surfDirection = -1;
-		else
-			surfDirection = 1;
-
-		double goAngle = Utils.normalRelativeAngle(surfWave.directAngle + (surfDirection * Math.PI / 2));
-		setBackAsFront(this, goAngle);
-	}
-
-	public double checkDanger(EnemyWave surfWave, int direction) {
-		double guessFactor = getFactorIndex(surfWave, direction);
-		int index = (int) Math.round(((guessFactor + 1.0) / 2.0) * (surfStats.size() - 1));
-		return surfStats.get(Math.max(0, Math.min(index, surfStats.size() - 1))) + Math.random();
-	}
-
-	public double getFactorIndex(EnemyWave surfWave, int direction) {
-		Point2D.Double enemyFireLocation = surfWave.fireLocation;
-		double offsetAngle = Utils
-				.normalRelativeAngle(Math.atan2(getX() - enemyFireLocation.x, getY() - enemyFireLocation.y)
-						- surfWave.directAngle);
-		double factor = offsetAngle / maxEscapeAngle(surfWave.bulletVelocity) * direction;
-		return limit(-1, factor, 1);
-	}
-
-	public double maxEscapeAngle(double velocity) {
-		return Math.asin(8.0 / velocity);
-	}
-
-	public static double limit(double min, double value, double max) {
-		return Math.max(min, Math.min(value, max));
-	}
-
-	public static void setBackAsFront(AdvancedRobot robot, double goAngle) {
-		double angle = Utils.normalRelativeAngle(goAngle - robot.getHeadingRadians());
-		if (Math.abs(angle) > (Math.PI / 2)) {
-			if (angle < 0)
-				robot.setTurnRightRadians(Math.PI + angle);
-			else
-				robot.setTurnRightRadians(-Math.PI + angle);
-			robot.setBack(100);
-		} else {
-			robot.setTurnRightRadians(angle);
-			robot.setAhead(100);
-		}
-	}
-
-	// Classe auxiliar que representa a "onda" da bala inimiga
-	class EnemyWave {
-		Point2D.Double fireLocation;
-		long fireTime;
-		double bulletVelocity, directAngle, distanceTraveled;
-		int direction;
-	}
+    // ------------------------------
+    // Utilitários
+    // ------------------------------
+    public static double bulletVelocity(double power){ return 20-3*power; }
+    public static double limit(double min,double value,double max){ return Math.max(min,Math.min(value,max)); }
+    public static void setBackAsFront(AdvancedRobot robot,double goAngle){
+        double angle = Utils.normalRelativeAngle(goAngle-robot.getHeadingRadians());
+        if(Math.abs(angle)>(Math.PI/2)){
+            if(angle<0) robot.setTurnRightRadians(Math.PI+angle);
+            else robot.setTurnRightRadians(-Math.PI+angle);
+            robot.setBack(100);
+        }else{
+            robot.setTurnRightRadians(angle);
+            robot.setAhead(100);
+        }
+    }
 }
