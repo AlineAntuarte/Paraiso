@@ -1,6 +1,6 @@
 # LittleBoy / EnhancedLittleBoy 🤖
 
-Bem-vindo ao nosso robô **LittleBoy**!  
+Bem-vindo ao nosso robocode **LittleBoy**!  
 
 <img src="https://github.com/user-attachments/assets/5a998993-ad8b-4549-b1c0-ebf556491d3a" alt="LittleBoy" width="300"/>
 
