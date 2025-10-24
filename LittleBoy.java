@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.geom.*;
 import java.util.*;
 import robocode.util.Utils;
-import java.io.File;
 
 /**
  * LittleBoy Ultra-Potente - Autores: Aline, Thalia e Thaissa

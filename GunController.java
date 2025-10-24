@@ -2,6 +2,8 @@ package Paraiso;
 
 import robocode.*;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+
 import robocode.util.Utils;
 
 /**
@@ -12,8 +14,8 @@ import robocode.util.Utils;
  * para escolher o melhor ângulo de disparo com base em aprendizado.
  */
 public class GunController {
-    private AdvancedRobot robot;           // Referência ao robô principal
-    private DangerMapManager dangerMapManager;  // Mapas de perigo (histórico dos melhores ângulos)
+    private AdvancedRobot robot; // Referência ao robô principal
+    private DangerMapManager dangerMapManager; // Mapas de perigo (histórico dos melhores ângulos)
 
     // Construtor: recebe o robô e o gerenciador de DangerMaps
     public GunController(AdvancedRobot robot, DangerMapManager dangerMapManager) {
@@ -21,15 +23,43 @@ public class GunController {
         this.dangerMapManager = dangerMapManager;
     }
 
+    // TESTE DE CORREÇÃO
+
+    /**
+     * Chamado quando nossa bala acerta o inimigo.
+     * Usamos isso para treinar nosso DangerMap (aprender).
+     */
+    public void onBulletHit(BulletHitEvent e, ArrayList<MyWave> myWaves, DangerMapManager dangerMapManager) {
+        // Lógica para encontrar a "onda" do tiro que acertou
+        // e registrar no DangerMap que aquele foi um bom tiro.
+        // (Esta lógica precisa ser criada ou movida para cá)
+
+        // Exemplo simples (provavelmente precisa de mais lógica):
+        System.out.println("Acertei o inimigo com potência: " + e.getBullet().getPower());
+    }
+
+    /**
+     * Chamado quando nossa bala erra o inimigo.
+     * Usamos isso para treinar nosso DangerMap (aprender).
+     */
+    public void onBulletMissed(BulletMissedEvent e, ArrayList<MyWave> myWaves, DangerMapManager dangerMapManager) {
+        // Lógica para encontrar a "onda" do tiro que errou
+        // e talvez registrar no DangerMap que aquele foi um tiro ruim.
+
+        // Exemplo simples:
+        System.out.println("Errei o tiro.");
+    }
+
     /**
      * Mira e dispara no inimigo com base na predição + DangerMap.
      */
     public void aimAndFire(ScannedRobotEvent e) {
         // Não dispara se o canhão ainda está quente ou se a energia está baixa
-        if (robot.getGunHeat() > 0.2 || robot.getEnergy() < 0.5) return;
+        if (robot.getGunHeat() > 0.2 || robot.getEnergy() < 0.5)
+            return;
 
-        double firePower = decideFirePower(e);       // Escolhe a força do tiro
-        double bulletSpeed = 20 - 3 * firePower;     // Fórmula padrão do Robocode para velocidade do projétil
+        double firePower = decideFirePower(e); // Escolhe a força do tiro
+        double bulletSpeed = 20 - 3 * firePower; // Fórmula padrão do Robocode para velocidade do projétil
 
         // Previsão linear: calcula onde o inimigo provavelmente estará
         Point2D.Double pred = predict(e, bulletSpeed);
@@ -66,8 +96,10 @@ public class GunController {
 
         // Dispara se o canhão já estiver quase alinhado
         if (Math.abs(Utils.normalRelativeAngle(aim - robot.getGunHeadingRadians())) < 0.25) {
-            Bullet b = robot.setFire(Math.max(0.1, Math.min(firePower, robot.getEnergy() - 0.1)));
-            // Não registra aqui — o robô principal pode fazer isso
+            robot.setFireBullet(Math.max(0.1, Math.min(firePower, robot.getEnergy() - 0.1)));
+            // Não registra aqui — o
+            // robô principal pode
+            // fazer isso
         }
     }
 
@@ -76,7 +108,8 @@ public class GunController {
      * usada para treinar o DangerMap (aprendizado).
      */
     public MyWave fireWithGuess(ScannedRobotEvent e) {
-        if (robot.getGunHeat() > 0.2 || robot.getEnergy() < 0.5) return null;
+        if (robot.getGunHeat() > 0.2 || robot.getEnergy() < 0.5)
+            return null;
 
         double firePower = decideFirePower(e);
         double bulletSpeed = 20 - 3 * firePower;
@@ -107,7 +140,7 @@ public class GunController {
 
         // Se o canhão estiver alinhado o suficiente, dispara
         if (Math.abs(Utils.normalRelativeAngle(aim - robot.getGunHeadingRadians())) < 0.25) {
-            Bullet b = robot.setFire(Math.max(0.1, Math.min(firePower, robot.getEnergy() - 0.1)));
+            Bullet b = robot.setFireBullet(Math.max(0.1, Math.min(firePower, robot.getEnergy() - 0.1)));
             // Retorna uma "onda" de tiro (para treinar o acerto depois)
             if (b != null && dangerMap != null) {
                 return new MyWave(b, bestIdx, e.getDistance());
@@ -154,14 +187,20 @@ public class GunController {
         double firePower;
 
         // Ajuste de potência por distância
-        if (d < 150) firePower = 3.0;
-        else if (d < 300) firePower = 2.0;
-        else if (d < 500) firePower = 1.4;
-        else firePower = 1.0;
+        if (d < 150)
+            firePower = 3.0;
+        else if (d < 300)
+            firePower = 2.0;
+        else if (d < 500)
+            firePower = 1.4;
+        else
+            firePower = 1.0;
 
         // Reduz a potência quando a energia do robô está baixa
-        if (robot.getEnergy() < 15) firePower = Math.min(firePower, 1.0);
-        if (robot.getEnergy() < 6) firePower = 0.4;
+        if (robot.getEnergy() < 15)
+            firePower = Math.min(firePower, 1.0);
+        if (robot.getEnergy() < 6)
+            firePower = 0.4;
 
         // Também considera a energia do inimigo (não desperdiça)
         firePower = Math.min(firePower, Math.max(0.1, e.getEnergy() / 4.0));

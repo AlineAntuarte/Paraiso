@@ -1,7 +1,7 @@
 package Paraiso;
 
 import robocode.Bullet; // Importa a classe Bullet do Robocode para rastrear balas
-import java.awt.geom.Point2D; // Importa Point2D (não usado aqui, mas possivelmente útil futuramente)
+// import java.awt.geom.Point2D; // Importa Point2D (não usado aqui, mas possivelmente útil futuramente)
 
 // Classe que representa uma onda de bala disparada pelo nosso robô
 // Utilizada para o aprendizado do robô (Wave Surfing / ajuste de tiro)

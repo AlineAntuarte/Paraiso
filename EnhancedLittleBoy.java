@@ -47,7 +47,6 @@ public class EnhancedLittleBoy extends LittleBoy {
      *  - Inimigo empurra com força proporcional à distância
      *  - Pequeno desvio tangencial cria movimento curvo (dificulta acertos)
      */
-    @Override
     public void doAntiGravity() {
         double xForce = 0;
         double yForce = 0;
