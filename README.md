@@ -8,7 +8,7 @@ Este projeto está sendo desenvolvido por nós três:
 
 - **Thalia de Lara Barbosa** – larathalia003@gmail.com  
 - **Aline Barbosa Antuarte** – aline.ba@aluno.ifsc.edu.br
-- **Thaissa Cintra de Mattos** – thaissa.mcintra@gmail.com  
+- **Thaissa Cintra de Mattos** – thaissa.c@aluno.ifsc.edu.br
 
 Tudo isso no nosso curso de **ADS**, na matéria de **Introdução à Computação**, com o professor Diego.  
 Estamos criando o nosso **LittleBoy** e sua versão turbinada **EnhancedLittleBoy**! 🚀
