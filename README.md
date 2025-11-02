@@ -2,7 +2,7 @@
 
 Bem-vindo ao nosso robocode **LittleBoy**!  
 
-![LittleBoy](https://github.com/user-attachments/assets/5a998993-ad8b-4549-b1c0-ebf556491d3a)
+<img src="https://github.com/user-attachments/assets/5a998993-ad8b-4549-b1c0-ebf556491d3a" width="50%" alt="LittleBoy">
 
 Este projeto está sendo desenvolvido por nós três:
 
@@ -63,8 +63,6 @@ Estamos criando o nosso **LittleBoy** e sua versão turbinada **EnhancedLittleBo
 Prepare-se para ver o **LittleBoy** esquivar, mirar e atacar como um verdadeiro ninja do Robocode! ⚔️
 
 ## LittleBoy 2.0 – Robocode Bot
-
-![LittleBoy](https://github.com/user-attachments/assets/5a998993-ad8b-4549-b1c0-ebf556491d3a)
 
 ## 🔰 Visão Geral
 
