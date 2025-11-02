@@ -88,74 +88,37 @@ public class LittleBoy extends AdvancedRobot {
         return p;
     }
 
-    // onScannedRobot: O que fazer ao ver outro robô
-    public void onScannedRobot(ScannedRobotEvent e) {
-        double absBearing = e.getBearingRadians() + getHeadingRadians();
+	// onScannedRobot: O que fazer ao ver outro robô
 
-        // Armazena a posição do inimigo para o movimento anti-gravity
-        enemyPoints[count] = new Point2D.Double(
-            getX() + e.getDistance() * Math.sin(absBearing),
-            getY() + e.getDistance() * Math.cos(absBearing)
-        );
-        if (++count >= getOthers()) count = 0;
+	public void onScannedRobot(ScannedRobotEvent e) {
+		shoot (e);
+		setFire (1);
+		// Quando Radar encontra um inimigo
+		double angleToEnemy =
+			getHeadingRadians() + e.getBearingRadians();
+		double turnToEnemy = Utils.normalRelativeAngle(angleToEnemy - getRadarHeadingRadians());
+		double extraTurn = Math.atan(36.0 / e.getDistance()) * (turnToEnemy >= 0 ? 1 : -1);
+		
+		setTurnRadarRightRadians(turnToEnemy + extraTurn);
+			
+	}
+	
+	// Configuração da Mira
+	public void shoot (ScannedRobotEvent e) {
+		double absoluteBearing = e.getBearingRadians() + getHeadingRadians();
+		double gunTurn = absoluteBearing - getGunHeadingRadians();
+		setTurnGunRightRadians(Utils.normalRelativeAngle(gunTurn));
+		setFire(1.0);
+	}
 
-        shoot(e); // Chama o método de tiro
-        setFire(1); // Tiro padrão
-
-        // Quando Radar encontra um inimigo
-        double angleToEnemy = getHeadingRadians() + e.getBearingRadians();
-        double turnToEnemy = Utils.normalRelativeAngle(angleToEnemy - getRadarHeadingRadians());
-        double extraTurn = Math.atan(36.0 / e.getDistance()) * (turnToEnemy >= 0 ? 1 : -1);
-        setTurnRadarRightRadians(turnToEnemy + extraTurn);
-
-        // ------------------------------
-        // DETECÇÃO DE TIRO INIMIGO
-        // ------------------------------
-        double changeInEnergy = enemyEnergy - e.getEnergy();
-        if (changeInEnergy > 0 && changeInEnergy <= 3.0) {
-            EnemyWave ew = new EnemyWave();
-            ew.fireTime = getTime();
-            ew.bulletVelocity = bulletVelocity(changeInEnergy);
-            ew.fireLocation = new Point2D.Double(
-                getX() + Math.sin(angleToEnemy) * e.getDistance(),
-                getY() + Math.cos(angleToEnemy) * e.getDistance()
-            );
-            ew.directAngle = angleToEnemy;
-            ew.direction = (Math.sin(e.getBearingRadians()) * getVelocity()) >= 0 ? 1 : -1;
-            enemyWaves.add(ew);
-        }
-        enemyEnergy = e.getEnergy();
-    }
-
-    // Configuração da Mira
-    public void shoot(ScannedRobotEvent e) {
-        double absoluteBearing = e.getBearingRadians() + getHeadingRadians();
-        double gunTurn = absoluteBearing - getGunHeadingRadians();
-        setTurnGunRightRadians(Utils.normalRelativeAngle(gunTurn));
-
-        double firePower = decideFirePower(e);
-        setFire(firePower);
-    }
-
-    public double decideFirePower(ScannedRobotEvent e) {
-        double firePower = getOthers() == 1 ? 2.0 : 3.0;
-
-        if (e.getDistance() > 400)
-            firePower = 1.0;
-        else if (e.getDistance() < 200)
-            firePower = 3.0;
-
-        if (getEnergy() < 1)
-            firePower = 0.1;
-        else if (getEnergy() < 10)
-            firePower = 1.0;
-
-        return Math.min(e.getEnergy() / 4, firePower);
-    }
-
-    public void onHitByBullet(HitByBulletEvent e) {
-        back(10);
-    }
+	/**
+	 * onHitByBullet: O que fazer ao ser atingido por uma bala
+	 */
+	public void onHitByBullet(HitByBulletEvent e) {
+		// Substitua a próxima linha por qualquer comportamento desejado
+		back(10);
+	}
+	
 
     public void onHitWall(HitWallEvent e) {
         System.out.println("WARNING: I hit a wall (" + getTime() + ").");
