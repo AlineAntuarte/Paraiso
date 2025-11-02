@@ -6,7 +6,7 @@ Bem-vindo ao nosso robocode **LittleBoy**!
 
 Este projeto está sendo desenvolvido por nós três:
 
-- **Thalia de Lara Barbosa** – <larathalia003@gmail.com>  
+- **Thalia de Lara Barbosa** – <thalia.b13@aluno.ifsc.edu.br>  
 - **Aline Barbosa Antuarte** – <aline.ba@aluno.ifsc.edu.br>
 - **Thaissa Cintra de Mattos** – <thaissa.c@aluno.ifsc.edu.br>
 
