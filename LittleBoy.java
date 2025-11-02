@@ -1,4 +1,4 @@
-package Paraiso;
+package Paraiso; // AAAAAAAAAA TESTE
 
 import robocode.*;
 import java.awt.Color;
